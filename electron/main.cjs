@@ -1,10 +1,11 @@
 const { app, BrowserWindow, ipcMain } = require("electron");
 const path = require("path");
 const fs = require("fs");
-const { json } = require("stream/consumers");
 
 app.setName("Matter2U");
 const dataTasks = path.join(app.getPath("userData"), "m2u_tasks.json");
+const dataCat = path.join(app.getPath("userData"), "m2u_Categories.json");
+const dataType = path.join(app.getPath("userData"), "m2u_TYPES.json");
 
 let mainWindow;
 
@@ -23,8 +24,10 @@ function createWindow() {
   if (isDev) {
     mainWindow.loadURL("http://localhost:5173");
     mainWindow.webContents.openDevTools();
+  } else {
+    mainWindow.loadFile(path.join(__dirname, "../dist/index.html"));
   }
-  elsemainWindow.loadFile("../dist/index.html");
+
   {
   }
 }
@@ -38,16 +41,16 @@ app.on("window-all-closed", () => {
 //Create method that will create my tasks
 ipcMain.handle("create-task", (event, newTask) => {
   try {
-    let item = [];
+    let task = [];
     if (fs.existsSync(dataTasks)) {
       const data = fs.readFileSync(dataTasks, "utf8");
-      item = JSON.parse(data);
+      task = JSON.parse(data);
     }
 
     newTask.id = Date.now();
-    item.push(newTask);
-    fs.writeFileSync(dataTasks, JSON.stringify(item, null, 2));
-    return newItem;
+    task.push(newTask);
+    fs.writeFileSync(dataTasks, JSON.stringify(task, null, 2));
+    return newTask;
   } catch (error) {
     console.error("Failed to create item:", error);
     throw error;
@@ -60,7 +63,7 @@ ipcMain.handle("reads-tasks", (event) => {
     let tasks = [];
     if (fs.existsSync(dataTasks)) {
       const data = fs.readFileSync(dataTasks, "utf8");
-      tasks = json.parse(data);
+      tasks = JSON.parse(data);
     }
 
     return tasks;
@@ -76,7 +79,7 @@ ipcMain.handle("update-task", (event, changedTask) => {
     let tasks = [];
     if (fs.existsSync(dataTasks)) {
       const data = fs.readFileSync(dataTasks, "utf8");
-      tasks = json.parse(data);
+      tasks = JSON.parse(data);
     }
 
     const index = tasks.findIndex((task) => changedTask.id === task.id);
